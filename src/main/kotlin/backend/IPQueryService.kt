@@ -1,6 +1,5 @@
 package backend
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import io.ipinfo.api.IPinfo
 import io.ipinfo.api.cache.SimpleCache
@@ -8,7 +7,7 @@ import io.ipinfo.api.errors.RateLimitedException
 import io.ipinfo.api.model.IPResponse
 import java.time.Duration
 
-class IPQueryService(private val token:String) {
+class IPQueryService(private val token: String) {
 
     fun query(ip: String): String {
         val ipinfo = IPinfo.Builder()
@@ -20,10 +19,11 @@ class IPQueryService(private val token:String) {
 
         return try {
             val ipResponse: IPResponse = ipinfo.lookupIP(ip)
-            val ipResponseString = gson.toJson(ipResponse)
-            gson.toJson(ipResponseString)
+            // 直接将ipResponse对象转换为JSON字符串返回
+            gson.toJson(ipResponse)
         } catch (e: RateLimitedException) {
-            gson.toJson(e)
+            // 将异常信息转换为JSON格式返回
+            gson.toJson(mapOf("error" to e.toString()))
         }
     }
 }
