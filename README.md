@@ -49,3 +49,8 @@ cd CheckIP
 ```shell
 java -jar build/libs/yourproject.jar
 ```
+
+## Special thanks
+[Jetpack Compose Desktop Project](https://www.jetbrains.com/lp/compose-multiplatform/)
+
+[IPinfo.io](https://ipinfo.io/)
