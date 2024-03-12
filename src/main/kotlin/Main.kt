@@ -113,7 +113,7 @@ fun appUI(tokenState: MutableState<String>, innerPadding: PaddingValues) {
             MaterialTheme {
                 Row {
                     textButtonBest("Clear", onClear = { ip = "" })
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.weight(0.5f))
                     buttonBest(txt = "Check IP", ip = ip, tokenState = tokenState, updateIpInfo = { result ->
                         ipInfo = result // 更新查询结果
                     })
@@ -132,8 +132,14 @@ fun bestOutlinedTextField(value: String, onValueChange: (String) -> Unit) {
         value = value,
         onValueChange = onValueChange,
         label = { androidx.compose.material3.Text("Input IP", color = Color.Black) },
-        modifier = Modifier.padding(16.dp),
-        singleLine = true
+        modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp),
+        singleLine = true,
+        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.Black,
+            unfocusedBorderColor = Color.Gray
+        )
     )
 }
 
@@ -157,15 +163,16 @@ fun buttonBest(txt: String, ip: String, tokenState: MutableState<String>, update
         colors = ButtonDefaults.buttonColors(Color.Black),
         modifier = Modifier.padding(16.dp)
     ) {
-        Text(txt)
+        Text(txt, color = Color.White)
     }
 }
 
 @Composable
 fun textButtonBest(txt: String, onClear: () -> Unit) {
-    androidx.compose.material3.Button(
+    androidx.compose.material3.TextButton(
         onClick = onClear,
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(16.dp),
+        colors = ButtonDefaults.buttonColors(Color.Gray)
     ) {
         Text(txt)
     }
@@ -205,10 +212,14 @@ fun bestShowDialog(showDialog: MutableState<Boolean>, tokenState: MutableState<S
         text = {
             Column {
                 // 这里应使用一个新的TextField来接受tempToken，而不是bestOutlinedTextField，因为需要特定于这个场景
-                OutlinedTextField(
+               androidx.compose.material3.OutlinedTextField(
                     value = tempToken,
                     onValueChange = { tempToken = it },
-                    label = { Text("API Token") }
+                    label = { Text("API Token") },
+                   colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.Gray
+                   )
                 )
             }
         },
