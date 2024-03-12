@@ -52,7 +52,7 @@ fun app() {
 @Composable
 @Preview
 fun bestTopBar() {
-    androidx.compose.material3.TopAppBar(
+    TopAppBar(
         title = { Text("Check IP info") },
         colors = topAppBarColors(
             containerColor = Color.Black,
@@ -128,7 +128,7 @@ fun appUI(tokenState: MutableState<String>, innerPadding: PaddingValues) {
 
 @Composable
 fun bestOutlinedTextField(value: String, onValueChange: (String) -> Unit) {
-    androidx.compose.material3.OutlinedTextField(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { androidx.compose.material3.Text("Input IP", color = Color.Black) },
@@ -136,7 +136,7 @@ fun bestOutlinedTextField(value: String, onValueChange: (String) -> Unit) {
         .fillMaxSize()
         .padding(16.dp),
         singleLine = true,
-        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+        colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.Black,
             unfocusedBorderColor = Color.Gray
         )
@@ -211,11 +211,11 @@ fun bestShowDialog(showDialog: MutableState<Boolean>, tokenState: MutableState<S
         text = {
             Column {
                 // 这里应使用一个新的TextField来接受tempToken，而不是bestOutlinedTextField，因为需要特定于这个场景
-               androidx.compose.material3.OutlinedTextField(
+               OutlinedTextField(
                     value = tempToken,
                     onValueChange = { tempToken = it },
                     label = { Text("API Token") },
-                   colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                   colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.Black,
                         unfocusedBorderColor = Color.Gray
                    )
@@ -223,7 +223,7 @@ fun bestShowDialog(showDialog: MutableState<Boolean>, tokenState: MutableState<S
             }
         },
         confirmButton = {
-            androidx.compose.material3.Button(
+            Button(
                 onClick = {
                     tokenState.value = tempToken // 更新令牌状态
                     showDialog.value = false
