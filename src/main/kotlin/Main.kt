@@ -169,10 +169,9 @@ fun buttonBest(txt: String, ip: String, tokenState: MutableState<String>, update
 
 @Composable
 fun textButtonBest(txt: String, onClear: () -> Unit) {
-    androidx.compose.material3.TextButton(
+    androidx.compose.material3.OutlinedButton(
         onClick = onClear,
         modifier = Modifier.padding(16.dp),
-        colors = ButtonDefaults.buttonColors(Color.Gray)
     ) {
         Text(txt)
     }
