@@ -2,13 +2,15 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Home
 import androidx.compose.material.icons.twotone.Settings
+import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -18,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import backend.IPQueryService
+import kotlinx.coroutines.launch
 
 fun main() = application {
     val state = rememberWindowState(width = 450.dp, height = 920.dp)
@@ -33,11 +37,13 @@ fun main() = application {
 @Composable
 @Preview
 fun app() {
+    val tokenState = rememberSaveable { mutableStateOf("") }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { bestTopBar() },
-        content = { innerPadding ->
-            appUI(innerPadding)
+        content = {innerPadding ->
+            appUI(tokenState, innerPadding)
         }
     )
 }
@@ -72,6 +78,8 @@ fun bestTopBar() {
 @Composable
 fun bestToggleButton() {
     val showDialogState = rememberSaveable { mutableStateOf(false) }
+    // 定义tokenState，供bestShowDialog使用
+    val tokenState = rememberSaveable { mutableStateOf("") }
 
     IconToggleButton(
         checked = showDialogState.value,
@@ -84,125 +92,141 @@ fun bestToggleButton() {
         )
     }
 
+    // 在if条件下调用bestShowDialog，并传递tokenState
     if (showDialogState.value) {
-        bestShowDialog(showDialogState)
+        bestShowDialog(showDialog = showDialogState, tokenState = tokenState)
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
-fun appUI(innerPadding: PaddingValues) {
-    LazyColumn {
+fun appUI(tokenState: MutableState<String>, innerPadding: PaddingValues) {
+    var ip by rememberSaveable { mutableStateOf("") }
+    var ipInfo by remember { mutableStateOf("") } // 新状态用于存储IP信息
+
+    LazyColumn(modifier = Modifier.padding(innerPadding)) {
         item {
             MaterialTheme {
-                bestOutlinedTextField()
+                bestOutlinedTextField(ip, onValueChange = { ip = it })
             }
         }
         item {
             MaterialTheme {
                 Row {
-                    textButtonBest("Clear")
-                    Spacer(modifier = Modifier.weight(0.1f))
-                    buttonBest("Check IP")
+                    textButtonBest("Clear", onClear = { ip = "" })
+                    Spacer(modifier = Modifier.weight(1f))
+                    buttonBest(txt = "Check IP", ip = ip, tokenState = tokenState, updateIpInfo = { result ->
+                        ipInfo = result // 更新查询结果
+                    })
                 }
             }
         }
         item {
-            bestOutlinedCard()
+            bestOutlinedCard(ipInfo) // 传递IP信息
         }
     }
 }
 
 @Composable
-fun bestOutlinedTextField() {
-    var text by rememberSaveable { mutableStateOf("") }
+fun bestOutlinedTextField(value: String, onValueChange: (String) -> Unit) {
     androidx.compose.material3.OutlinedTextField(
-        value = text,
-        onValueChange = { text = it },
-        label = { androidx.compose.material3.Text(text = "Input !", color = Color.Black) },
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        singleLine = true,
-        // isError = text.isEmpty(),
-        supportingText = {
-            if (text.isEmpty()) {
-                androidx.compose.material3.Text(text = "Please input!", color = Color.Black)
-            }
-        },
-        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Black,
-            unfocusedBorderColor = Color.Gray,
-            )
+        value = value,
+        onValueChange = onValueChange,
+        label = { androidx.compose.material3.Text("Input IP", color = Color.Black) },
+        modifier = Modifier.padding(16.dp),
+        singleLine = true
     )
 }
 
-@Preview
 @Composable
-fun buttonBest(txt: String,) {
-    androidx.compose.material3.Button(
-        onClick = { /*TODO*/ },
-        colors = ButtonDefaults.buttonColors(Color.Black),
-        modifier = Modifier.padding(16.dp),
-        contentPadding = ButtonDefaults.ContentPadding
-    ) {
-        androidx.compose.material3.Text(txt)
-    }
-}
+fun buttonBest(txt: String, ip: String, tokenState: MutableState<String>, updateIpInfo: (String) -> Unit) {
+    val coroutineScope = rememberCoroutineScope() // 获取协程作用域
 
-@Preview
-@Composable
-fun textButtonBest(txt: String) {
-    androidx.compose.material3.OutlinedButton(
-        onClick = { /*TODO*/ },
-        modifier = Modifier.padding(16.dp),
-        contentPadding = ButtonDefaults.ContentPadding
-    ) {
-        androidx.compose.material3.Text(text = txt, color = Color.Black)
-    }
-}
-
-@Composable
-fun bestOutlinedCard() {
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxHeight(0.2f)
-            .fillMaxWidth(0.2f)
-            .padding(16.dp),
-    ) {
-        Text("121322")
-    }
-}
-
-@Composable
-fun bestShowDialog(showDialog:MutableState<Boolean>,onDismiss: () -> Unit = {}) {
-    androidx.compose.material3.AlertDialog(
-       onDismissRequest = {
-         showDialog.value = false
-         onDismiss()
-       },
-        containerColor = Color.White,
-            title = { androidx.compose.material3.Text("Token setting") },
-            text = {
-                   Column(
-                       modifier = Modifier.fillMaxWidth().padding(16.dp)
-                   ) {
-                      Row(modifier = Modifier.fillMaxHeight(0.15f)) {
-                          bestOutlinedTextField()
-                      }
-                       Spacer(modifier = Modifier.height(16.dp))
-                   }
-            },
-            confirmButton = {
-                androidx.compose.material3.Button(colors = ButtonDefaults.buttonColors( Color.Black),onClick = { showDialog.value = false }) {
-                    androidx.compose.material3.Text("OK")
-                }
-            },
-            dismissButton = {
-                androidx.compose.material3.TextButton(onClick = { showDialog.value = false }) {
-                    androidx.compose.material3.Text("Cancel", color = Color.Black)
+    Button(
+        onClick = {
+            // 在协程中异步执行IP查询
+            coroutineScope.launch {
+                val ipQueryService = IPQueryService(token = tokenState.value)
+                try {
+                    val ipInfo = ipQueryService.query(ip)
+                    updateIpInfo(ipInfo) // 使用查询结果更新状态
+                } catch (e: Exception) {
+                    updateIpInfo("Failed to retrieve IP information: ${e.message}")
                 }
             }
-        )
+        },
+        colors = ButtonDefaults.buttonColors(Color.Black),
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Text(txt)
+    }
+}
+
+@Composable
+fun textButtonBest(txt: String, onClear: () -> Unit) {
+    androidx.compose.material3.Button(
+        onClick = onClear,
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Text(txt)
+    }
+}
+
+@Composable
+fun bestOutlinedCard(ipInfo: String) {
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth()
+            .padding(16.dp)
+            .height(300.dp)
+            .width(200.dp),
+        border = CardDefaults.outlinedCardBorder(true)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            if (ipInfo.isNotEmpty()) {
+                Text(text = ipInfo) // 显示IP信息
+            } else {
+                Text(text = "No IP Info Available") // 当没有信息时的占位文本
+            }
+        }
+    }
+}
+
+@Composable
+fun bestShowDialog(showDialog: MutableState<Boolean>, tokenState: MutableState<String>, onDismiss: () -> Unit = {}) {
+    var tempToken by rememberSaveable { mutableStateOf(tokenState.value) }
+
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = {
+            showDialog.value = false
+            onDismiss()
+        },
+        title = { Text("Token Setting") },
+        text = {
+            Column {
+                // 这里应使用一个新的TextField来接受tempToken，而不是bestOutlinedTextField，因为需要特定于这个场景
+                OutlinedTextField(
+                    value = tempToken,
+                    onValueChange = { tempToken = it },
+                    label = { Text("API Token") }
+                )
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.Button(
+                onClick = {
+                    tokenState.value = tempToken // 更新令牌状态
+                    showDialog.value = false
+                },
+                colors = ButtonDefaults.buttonColors(Color.Black)
+                ) {
+                Text("OK", color = Color.White)
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = { showDialog.value = false }) {
+                Text("Cancel")
+            }
+        }
+    )
 }

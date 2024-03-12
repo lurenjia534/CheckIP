@@ -8,11 +8,11 @@ import io.ipinfo.api.errors.RateLimitedException
 import io.ipinfo.api.model.IPResponse
 import java.time.Duration
 
-class IPQueryService {
+class IPQueryService(private val token:String) {
 
     fun query(ip: String): String {
         val ipinfo = IPinfo.Builder()
-            .setToken("")
+            .setToken(token)
             .setCache(SimpleCache(Duration.ofHours(1)))
             .build()
 
